@@ -3,6 +3,8 @@
         "figsize",
         "fontsize",
         "itemsizing",
+        "MLRF",
+        "MLSVM",
         "pairplot",
         "suptitle",
         "xaxis",
