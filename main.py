@@ -8,7 +8,9 @@ file_path = "Data/global_traffic_accidents.csv"
 df = pd.read_csv(file_path)
 
 # Display sample rows of the dataset
-print(df.sample(5))  # Show 5 random rows instead of head and tail
+print(df.head())
+print('\n')
+print(df.tail())
 
 # Display the data types of each column
 print(df.dtypes)
