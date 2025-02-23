@@ -1,75 +1,107 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import plotly.express as px
-import plotly.graph_objects as go
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
-# Load dataset
+# โหลดข้อมูล
+@st.cache_data
+def load_data(file_path):
+    df = pd.read_csv(file_path)
+    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
+    price_columns = ["Close/Last", "Open", "High", "Low"]
+    for col in price_columns:
+        df[col] = df[col].replace({'\\$': ''}, regex=True).astype(float)
+    return df
+
+# โหลดข้อมูล
 file_path = "Data/NVDA.csv"
-df = pd.read_csv(file_path)
+df = load_data(file_path)
 
-# Convert Date to Datetime
-if "Date" in df.columns:
-    df["Datetime"] = pd.to_datetime(df["Date"], errors="coerce")
-    df.drop(columns=["Date"], inplace=True)
+# ลบ Outliers ล่วงหน้า เพื่อใช้ได้ทุกหน้า
+Q1, Q3 = df["Volume"].quantile([0.25, 0.75])
+IQR = Q3 - Q1
+lower_bound, upper_bound = Q1 - 1.5 * IQR, Q3 + 1.5 * IQR
+df_cleaned = df[(df["Volume"] >= lower_bound) & (df["Volume"] <= upper_bound)]
 
-# Remove duplicates
-df.drop_duplicates(inplace=True)
+# Sidebar สำหรับเลือกหน้า
+page = st.sidebar.radio("เลือกหน้า:", ["📊 ข้อมูล", "📈 การพยากรณ์หุ้น"])
 
-# Define feature and target variable
-x = df[["Volume"]]
-y = df["Close"]
+# ----------------------------- หน้า 1: ข้อมูล -----------------------------
+if page == "📊 ข้อมูล":
+    st.title("📊 ข้อมูลหุ้น NVIDIA")
+    st.write("หน้านี้แสดงข้อมูลหุ้นของ NVIDIA และการเตรียมข้อมูลสำหรับการพยากรณ์")
 
-# Split data into train and test sets
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    if st.checkbox("🔍 แสดงข้อมูลดิบ (Raw Data)"):
+        st.write(df.head())
 
-# Train models
-svr_model = SVR(kernel='rbf', epsilon=0.1)
-svr_model.fit(x_train, y_train)
-y_pred_svr = svr_model.predict(x_test)
-mae_svr = mean_absolute_error(y_test, y_pred_svr)
+    st.write("✅ **ลบค่า Outliers จากปริมาณการซื้อขาย (Volume) แล้ว**")
 
-rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
-rf_model.fit(x_train, y_train)
-y_pred_rf = rf_model.predict(x_test)
-mae_rf = mean_absolute_error(y_test, y_pred_rf)
+    st.subheader("🔎 การแจกแจงข้อมูล (Data Distribution)")
+    fig = px.box(df_cleaned, y=["Close/Last", "Open", "High", "Low", "Volume"], title="Boxplot แสดงค่า Outliers")
+    st.plotly_chart(fig)
 
-# Streamlit UI
-st.title("Stock Price Prediction (NVDA)")
-st.write("This app predicts the closing price of NVDA stock using Machine Learning models.")
+# ----------------------------- หน้า 2: การพยากรณ์ -----------------------------
+elif page == "📈 การพยากรณ์หุ้น":
+    st.title("📈 การพยากรณ์ราคาหุ้น NVIDIA")
+    st.write("หน้านี้ใช้ **SVM** และ **Random Forest** เพื่อพยากรณ์ราคาหุ้น")
 
-# Model Performance
-st.subheader("Model Performance")
-st.write(f"SVM Mean Absolute Error: {mae_svr}")
-st.write(f"RandomForest Mean Absolute Error: {mae_rf}")
+    # เตรียมข้อมูล
+    X = df_cleaned[["Open", "High", "Low"]]
+    y = df_cleaned["Close/Last"]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Interactive scatter plots
-if st.button("Show Prediction Scatter Plot"):
-    fig1 = px.scatter(x=y_test, y=y_pred_svr, labels={'x': 'True Close Price', 'y': 'Predicted Close Price'},
-                    title="SVR: True vs Predicted Close Price")
-    fig1.add_trace(go.Scatter(x=[y_test.min(), y_test.max()], y=[y_test.min(), y_test.max()], mode='lines', name='Ideal Fit', line=dict(color='red', dash='dash')))
-    st.plotly_chart(fig1)
+    st.write("✅ **แบ่งข้อมูลเป็นชุด Train/Test แล้ว** (80% Train, 20% Test)")
+
+    # ฝึกโมเดล
+    st.subheader("⚙️ ฝึกโมเดล Machine Learning")
     
-    fig2 = px.scatter(x=y_test, y=y_pred_rf, labels={'x': 'True Close Price', 'y': 'Predicted Close Price'},
-                    title="RandomForest: True vs Predicted Close Price")
-    fig2.add_trace(go.Scatter(x=[y_test.min(), y_test.max()], y=[y_test.min(), y_test.max()], mode='lines', name='Ideal Fit', line=dict(color='red', dash='dash')))
-    st.plotly_chart(fig2)
+    svm_model = SVR(kernel='rbf', C=100, epsilon=0.1)
+    svm_model.fit(X_train, y_train)
+    y_pred_svm = svm_model.predict(X_test)
+    mae_svm = mean_absolute_error(y_test, y_pred_svm)
 
-# Interactive line plots over time
-if st.button("Show Prediction Results Over Time"):
-    fig3 = go.Figure()
-    fig3.add_trace(go.Scatter(y=y_test.values, mode='lines', name='True Values', line=dict(color='black')))
-    fig3.add_trace(go.Scatter(y=y_pred_svr, mode='lines', name='SVR Predictions', line=dict(color='blue', dash='dash')))
-    fig3.update_layout(title="SVR Prediction Results Over Time", xaxis_title="Volume", yaxis_title="Close Price")
-    st.plotly_chart(fig3)
-    
-    fig4 = go.Figure()
-    fig4.add_trace(go.Scatter(y=y_test.values, mode='lines', name='True Values', line=dict(color='black')))
-    fig4.add_trace(go.Scatter(y=y_pred_rf, mode='lines', name='RF Predictions', line=dict(color='green', dash='dash')))
-    fig4.update_layout(title="RandomForest Prediction Results Over Time", xaxis_title="Volume", yaxis_title="Close Price")
-    st.plotly_chart(fig4)
+    rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+    rf_model.fit(X_train, y_train)
+    y_pred_rf = rf_model.predict(X_test)
+    mae_rf = mean_absolute_error(y_test, y_pred_rf)
+
+    st.write(f"✅ **SVM Mean Absolute Error:** {mae_svm:.8f}")
+    st.write(f"✅ **Random Forest Mean Absolute Error:** {mae_rf:.8f}")
+
+    # เปรียบเทียบผลลัพธ์ของโมเดล
+    st.subheader("📉 เปรียบเทียบผลพยากรณ์")
+
+    tab1, tab2 = st.tabs(["🔴 SVM Predictions", "🟢 Random Forest Predictions"])
+
+    with tab1:
+        fig_svm = px.scatter(
+            x=y_test, y=y_pred_svm, 
+            labels={"x": "True Volume", "y": "Predicted Volume"},
+            title="SVM: Predicted vs True Volume",
+            color_discrete_sequence=["red"]
+        )
+        fig_svm.update_traces(marker=dict(size=6, opacity=0.7))
+        fig_svm.update_layout(
+            xaxis_title="True Volume",
+            yaxis_title="Predicted Volume",
+            template="plotly_dark"
+        )
+        st.plotly_chart(fig_svm)
+
+    with tab2:
+        fig_rf = px.scatter(
+            x=y_test, y=y_pred_rf, 
+            labels={"x": "True Volume", "y": "Predicted Volume"},
+            title="Random Forest: Predicted vs True Volume",
+            color_discrete_sequence=["green"]
+        )
+        fig_rf.update_traces(marker=dict(size=6, opacity=0.7))
+        fig_rf.update_layout(
+            xaxis_title="True Volume",
+            yaxis_title="Predicted Volume",
+            template="plotly_dark"
+        )
+        st.plotly_chart(fig_rf)
