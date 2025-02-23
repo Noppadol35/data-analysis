@@ -7,7 +7,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
 # Load dataset
-file_path = "/mnt/data/NVDA.csv"
+file_path = "Data/NVDA.csv"
 df = pd.read_csv(file_path)
 
 # Convert Date to Datetime
