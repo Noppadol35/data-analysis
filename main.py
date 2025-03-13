@@ -15,7 +15,7 @@ def load_data(file_path):
     return df
 
 # Load data
-file_path = "Data/NVDA.csv"
+file_path = "NVDA.csv"
 df = load_data(file_path)
 
 # Remove outliers
