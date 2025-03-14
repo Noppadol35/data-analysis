@@ -31,6 +31,8 @@ df_cleaned = df[(df["Volume"] >= lower_bound) & (df["Volume"] <= upper_bound)]
 # Sidebar for page selection
 page = st.sidebar.radio("Select Page:", ["📊 Data", "📈 Stock Forecasting", "🤖 Neural Network"])
 
+
+
 # ----------------------------- Page 1: Data -----------------------------
 if page == "📊 Data":
     st.title("📊 NVIDIA Stock Data")
@@ -44,19 +46,41 @@ if page == "📊 Data":
 # ----------------------------- Page 2: Stock Forecasting -----------------------------
 elif page == "📈 Stock Forecasting":
     st.title("📈 NVIDIA Stock Price Forecasting")
+
+    # ทำนายผลด้วยโมเดล SVM และ RF
     y_test_svm, y_pred_svm, mae_svm = train_svm_model(df_cleaned)
     y_test_rf, y_pred_rf, mae_rf = train_rf_model(df_cleaned)
+
+    # แสดงค่า MAE
     st.write(f"✅ **SVM Mean Absolute Error:** {mae_svm:.8f}")
     st.write(f"✅ **Random Forest Mean Absolute Error:** {mae_rf:.8f}")
 
+    # คำนวณค่าสูงสุด (Max), ค่าเฉลี่ย (Avg), และค่าต่ำสุด (Min)
+    svm_max, svm_avg, svm_min = np.max(y_pred_svm), np.mean(y_pred_svm), np.min(y_pred_svm)
+    rf_max, rf_avg, rf_min = np.max(y_pred_rf), np.mean(y_pred_rf), np.min(y_pred_rf)
+
+    # แสดงผลลัพธ์จากโมเดล SVM และ RF พร้อมกราฟ
     st.subheader("📉 Model Prediction Comparison")
     tab1, tab2 = st.tabs(["🔴 SVM Predictions", "🟢 Random Forest Predictions"])
     
     with tab1:
-        fig_svm = px.scatter(x=y_test_svm, y=y_pred_svm, labels={"x": "True Volume", "y": "Predicted Volume"}, title="SVM: Predicted vs True Volume", color_discrete_sequence=["red"])
+        st.markdown("### 🔴 SVM Model")
+        st.write(f"📌 **Max Price:** ${svm_max:.2f}")
+        st.write(f"📌 **Avg Price:** ${svm_avg:.2f}")
+        st.write(f"📌 **Min Price:** ${svm_min:.2f}")
+
+        fig_svm = px.scatter(x=y_test_svm, y=y_pred_svm, labels={"x": "True Price", "y": "Predicted Price"},
+                                title="SVM: Predicted vs True Price", color_discrete_sequence=["red"])
         st.plotly_chart(fig_svm)
+
     with tab2:
-        fig_rf = px.scatter(x=y_test_rf, y=y_pred_rf, labels={"x": "True Volume", "y": "Predicted Volume"}, title="Random Forest: Predicted vs True Volume", color_discrete_sequence=["green"])
+        st.markdown("### 🟢 Random Forest Model")
+        st.write(f"📌 **Max Price:** ${rf_max:.2f}")
+        st.write(f"📌 **Avg Price:** ${rf_avg:.2f}")
+        st.write(f"📌 **Min Price:** ${rf_min:.2f}")
+
+        fig_rf = px.scatter(x=y_test_rf, y=y_pred_rf, labels={"x": "True Price", "y": "Predicted Price"},
+                            title="Random Forest: Predicted vs True Price", color_discrete_sequence=["green"])
         st.plotly_chart(fig_rf)
 
 # ----------------------------- Page 3: Neural Network -----------------------------
