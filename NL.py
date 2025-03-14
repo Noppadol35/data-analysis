@@ -18,6 +18,9 @@ df.dropna(inplace=True)
 categorical_cols = ["Weather Condition", "Road Condition"]
 numerical_cols = ["Vehicles Involved"]
 
+# ข้อมูลดิบ (raw data) ที่ยังไม่ได้ผ่านการ encoding
+raw_data = df.copy()
+
 # ใช้ One-Hot Encoding สำหรับข้อมูลหมวดหมู่
 encoder = OneHotEncoder(sparse_output=False, drop="first")
 encoded_categorical = encoder.fit_transform(df[categorical_cols])
