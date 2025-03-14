@@ -117,7 +117,7 @@ sample_data = np.array(X_test.iloc[:5])
 predicted_causes, predicted_casualties = model.predict(sample_data)
 predicted_causes = np.argmax(predicted_causes, axis=1)
 predicted_causes = cause_encoder.inverse_transform(predicted_causes)
-predicted_casualties = predicted_casualties.flatten()
+predicted_casualties = np.round(predicted_casualties.flatten()).astype(int)
 
 print("Predicted Causes:", predicted_causes)
 print("Predicted Casualties:", predicted_casualties)
