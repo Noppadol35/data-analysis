@@ -70,8 +70,8 @@ model = keras.Model(inputs=input_layer, outputs=[cause_output, casualties_output
 
 # คอมไพล์โมเดล
 model.compile(optimizer="adam", 
-              loss={"cause_output": "sparse_categorical_crossentropy", "casualties_output": "mse"},
-              metrics={"cause_output": "accuracy", "casualties_output": "mae"})
+                loss={"cause_output": "sparse_categorical_crossentropy", "casualties_output": "mse"},
+                metrics={"cause_output": "accuracy", "casualties_output": "mae"})
 
 # ใช้ Early Stopping
 early_stopping = keras.callbacks.EarlyStopping(monitor="val_loss", patience=15, restore_best_weights=True)
