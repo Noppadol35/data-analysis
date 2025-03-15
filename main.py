@@ -288,14 +288,14 @@ elif page == "📈 Demo Stock Forecasting":
 # ----------------------------- Page 3: Summarize NL -----------------------------
 
 elif page == "⚛️ Summarize NL":
-    st.title("⚛️ Natural Language Processing")
+    st.title("⚛️ Natural Network")
     
     # แสดงข้อมูลดิบก่อนการ encode
     if st.checkbox("🔍 Show Raw Data"):
         st.subheader("📊 Raw Data")
         st.write(raw_data.head())  # แสดงข้อมูลดิบที่ยังไม่ได้ทำการ encode
     
-    tab1, tab2, tab3= st.tabs(["📊 Summarize Data", "🌲 Neural Network", "Ref."])
+    tab1, tab2, tab3= st.tabs(["📊 Summarize Data", "🌲 Neural Network Multi-Output", "Ref."])
     
     with tab1:
         st.write("### 🔹 Features in Dataset")
