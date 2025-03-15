@@ -289,7 +289,7 @@ elif page == "⚛️ Summarize NL":
         st.subheader("📊 Raw Data")
         st.write(raw_data.head())  # แสดงข้อมูลดิบที่ยังไม่ได้ทำการ encode
     
-    tab1, tab2= st.tabs(["📊 Summarize Data", "🌲 Neural Network"])
+    tab1, tab2, tab3= st.tabs(["📊 Summarize Data", "🌲 Neural Network", "Ref."])
     
     with tab1:
         st.write("### 🔹 Features in Dataset")
@@ -405,7 +405,15 @@ elif page == "⚛️ Summarize NL":
                 sample_data = np.array(X_test.iloc[:5])
                 predicted_causes, predicted_casualties = model.predict(sample_data)
                 """)
-
+    with tab3:
+        st.write("### 📚 References")
+        st.link_button("🔗 One-Hot Encoding","https://www.geeksforgeeks.org/ml-one-hot-encoding/")
+        st.link_button("🔗 Neural Network", "https://www.geeksforgeeks.org/neural-networks-a-beginners-guide/")
+        st.link_button("🔗 Neural Network multi-output", "https://medium.com/@kevinnjagi83/building-deep-learning-models-with-multi-output-architectures-61d1c3c81d40")
+        st.link_button("🔗 Softmax Activation", "https://medium.com/super-ai-engineer/softmax-function-%E0%B8%84%E0%B8%B7%E0%B8%AD%E0%B8%AD%E0%B8%B0%E0%B9%84%E0%B8%A3-eae1f1bbef63")
+        st.link_button("🔗 ReLU Activation", "https://www.geeksforgeeks.org/relu-activation-function-in-deep-learning/")
+        st.link_button("🔗 Adam Optimizer", "https://www.geeksforgeeks.org/adam-optimizer/")
+        st.link_button("🔗 Sheet in classroom", "https://classroom.google.com/u/1/w/NzMyNDg3MzcyNzEy/t/all")
 # ----------------------------- Page 4: Neural Network -----------------------------
 elif page == "🤖 Demo Neural Network":
     st.title("🤖 Accident Prediction")
