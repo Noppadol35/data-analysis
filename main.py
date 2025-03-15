@@ -10,6 +10,10 @@ import numpy as np
 from MLRF import train_rf_model
 from MLSVM import train_svm_model
 
+import sys
+sys.path.append('D:\Work\Code\data-analysis\MLSVM.py')
+sys.path.append('D:\Work\Code\data-analysis\MLRF.py')
+
 # Load data
 @st.cache_data
 def load_data(file_path):
@@ -282,7 +286,6 @@ elif page == "⚛️ Summarize NL":
     # แสดงข้อมูลดิบก่อนการ encode
     if st.checkbox("🔍 Show Raw Data"):
         st.subheader("📊 Raw Data")
-        st.write(raw_data.head())
 
 # ----------------------------- Page 4: Neural Network -----------------------------
 # elif page == "🤖 Neural Network":
