@@ -30,16 +30,10 @@ def load_data(file_path):
 
     return df
 # Sidebar for page selection
-page = st.sidebar.radio("Select Page:", [ "Exploration","📊 Data", "📈 Stock Forecasting", "🤖 Neural Network"])
-# ----------------------------- Page 1: Data -----------------------------
-if page == "Exploration":
-    # Display the title
-    st.title("📊 Exploration")
-    st.write("")
-    
+page = st.sidebar.radio("Select Page:", [ "📊 Summarize ML", "📈 Demo Stock Forecasting", "⚛️ Summarize NL","🤖 Neural Network"])
 
-# ----------------------------- Page 2: Data -----------------------------
-elif page == "📊 Data":
+# ----------------------------- Page 1: Data -----------------------------
+if page == "📊 Summarize ML":
     st.title("📊 Dataset US Stock From NASDAQ")
     st.markdown("🔗 [Download Dataset](https://www.nasdaq.com/market-activity/stocks/msft/historical?page=1&rows_per_page=10&timeline=y1)")
     
@@ -51,7 +45,7 @@ elif page == "📊 Data":
         file_path = "NVDA.csv"
         df = load_data(file_path)
     
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Summarize Data", "📈 Data Demo", "🌠 SVM", "🌲 RF"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Summarize Data", "📈 Data Cleaning Demo", "🌠 SVM", "🌲 RF", "Ref."])
     
     with tab1:
         st.write("### 🔹 Features in Dataset")
@@ -76,9 +70,18 @@ elif page == "📊 Data":
 
         st.write("### 🛠 Data Cleaning Process")
         st.write("1. ลบแถวที่มีค่า Missing Values")
+        st.code("df.dropna(inplace=True)")
         st.write("2. แปลงข้อมูลให้อยู่ในรูปแบบที่ถูกต้อง")
-        st.write("3. คำนวณเปอร์เซ็นต์การเปลี่ยนแปลงของราคา")
-        st.write("4. แสดงกราฟข้อมูลหลังทำความสะอาด")
+        st.code("df[col] = pd.to_numeric(df[col], errors='coerce')")
+        st.write("3. ลบข้อมูลที่ซ้ำซ้อน")
+        st.code("df.drop_duplicates(inplace=True)")
+        st.write("4. ลบค่า Outliers ด้วย IQR Method")
+        st.code("Q1, Q3 = df['Volume'].quantile([0.25, 0.75])")
+        st.code("IQR = Q3 - Q1")
+        st.code("lower_bound = Q1 - 1.5 * IQR")
+        st.code("upper_bound = Q3 + 1.5 * IQR")
+        st.code("df = df[(df['Volume'] >= lower_bound) & (df['Volume'] <= upper_bound)]")
+        st.write("5. แสดงผลลัพธ์ของข้อมูล")
         
 
         # กำหนดคอลัมน์ที่ต้องแปลงเป็นตัวเลข
@@ -206,10 +209,16 @@ elif page == "📊 Data":
         st.write(f"✅ **Random Forest Mean Absolute Error:** {mae_rf:.8f}")
         st.write(f"✅ **Random Forest Predictions**")
         st.write(pd.DataFrame({"True Price": y_test_rf, "Predicted Price": y_pred_rf}).head())
+    
+    with tab5:
+        st.link_button("🔗 Random Forest Algorithm", "https://www.geeksforgeeks.org/random-forest-algorithm-in-machine-learning/")
+        st.link_button("🔗 Support Vector Machine Algorithm", "https://www.geeksforgeeks.org/support-vector-machine-algorithm/")
+        st.link_button("🔗 Data Cleaning", "https://1stcraft.com/what-is-data-cleansing/")
+        st.link_button("🔗 Stock NASDAQ Data-set", "https://www.nasdaq.com/market-activity/stocks/msft/historical?page=1&rows_per_page=10&timeline=y1")
         
 
-# ----------------------------- Page 3: Stock Forecasting -----------------------------
-elif page == "📈 Stock Forecasting":
+# ----------------------------- Page 2: Stock Forecasting -----------------------------
+elif page == "📈 Demo Stock Forecasting":
     st.title("📈 NVIDIA Stock Price Forecasting")
 
     # Choose to upload a file or use the demo file
@@ -243,6 +252,8 @@ elif page == "📈 Stock Forecasting":
     st.subheader("📉 Model Prediction Comparison")
     tab1, tab2 = st.tabs(["🔴 SVM Predictions", "🟢 Random Forest Predictions"])
     
+    st.line_chart(df_cleaned["Close/Last"])
+    
     with tab1:
         st.markdown("### 🔴 SVM Model")
         st.write(f"📌 **Max Price:** ${svm_max:.2f}")
@@ -262,6 +273,16 @@ elif page == "📈 Stock Forecasting":
         fig_rf = px.scatter(x=y_test_rf, y=y_pred_rf, labels={"x": "True Price", "y": "Predicted Price"},
                             title="Random Forest: Predicted vs True Price", color_discrete_sequence=["green"])
         st.plotly_chart(fig_rf)
+        
+# ----------------------------- Page 3: Summarize NL -----------------------------
+
+elif page == "⚛️ Summarize NL":
+    st.title("⚛️ Natural Language Processing")
+    
+    # แสดงข้อมูลดิบก่อนการ encode
+    if st.checkbox("🔍 Show Raw Data"):
+        st.subheader("📊 Raw Data")
+        st.write(raw_data.head())
 
 # ----------------------------- Page 4: Neural Network -----------------------------
 # elif page == "🤖 Neural Network":
