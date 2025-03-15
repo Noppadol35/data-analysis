@@ -7,7 +7,8 @@ def train_svm_model(df_cleaned):
     # Prepare data
     X = df_cleaned[["Open", "High", "Low"]]
     y = df_cleaned["Close/Last"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, 
+                                                        test_size=0.2, random_state=42)
 
     # Train SVM model
     svm_model = SVR(kernel='rbf', C=100, epsilon=0.1)
