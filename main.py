@@ -13,7 +13,7 @@ from MLSVM import train_svm_model
 import sys
 sys.path.append('D:\Work\Code\data-analysis\MLSVM.py')
 sys.path.append('D:\Work\Code\data-analysis\MLRF.py')
-sys.path.append('D:\Work\Code\data-analysis\ISNeuralNetwork.py')
+sys.path.append('D:\Work\Code\data-analysis\ISNeuralNetwork')
 
 # Load data
 @st.cache_data
@@ -35,7 +35,7 @@ def load_data(file_path):
 
     return df
 # Sidebar for page selection
-page = st.sidebar.radio("Select Page:", [ "📊 Summarize ML", "📈 Demo Stock Forecasting", "⚛️ Summarize NL","🤖 Neural Network"])
+page = st.sidebar.radio("Select Page:", [ "📊 Summarize ML", "📈 Demo Stock Forecasting", "⚛️ Summarize NL","🤖 Demo Neural Network"])
 
 # ----------------------------- Page 1: Data -----------------------------
 if page == "📊 Summarize ML":
@@ -287,18 +287,137 @@ elif page == "⚛️ Summarize NL":
     # แสดงข้อมูลดิบก่อนการ encode
     if st.checkbox("🔍 Show Raw Data"):
         st.subheader("📊 Raw Data")
+        st.write(raw_data.head())  # แสดงข้อมูลดิบที่ยังไม่ได้ทำการ encode
+    
+    tab1, tab2= st.tabs(["📊 Summarize Data", "🌲 Neural Network"])
+    
+    with tab1:
+        st.write("### 🔹 Features in Dataset")
+        
+        feature_descriptions = {
+            "Accident ID": "🔢 รหัสอุบัติเหตุ",
+            "Date": "📅 วันที่เกิดอุบัติเหตุ",
+            "Time": "🕒 เวลาเกิดอุบัติเหตุ",
+            "Location": "📍 สถานที่เกิดอุบัติเหตุ",
+            "Weather": "🌦️ สภาพอากาศ",
+            "Cause": "🚗 สาเหตุของอุบัติเหตุ",
+            "Casualties": "🤕 จำนวนผู้บาดเจ็บ",
+            "Road Condition": "🛣️ สภาพถนน",
+        }
+        st.table(raw_data.head())
+        
+        for col in raw_data.columns:
+            if col in feature_descriptions:
+                st.write(f"**{col}** - {feature_descriptions[col]}")
+                
+        st.write("### 📊 Summary Statistics")
+        st.write(raw_data.describe())
+        
+        st.write("### 🛠 Data Cleaning Process")
+        st.write("1. ลบแถวที่มีค่า Missing Values")
+        st.code("df.dropna(inplace=True)")
+        st.write("2. แปลงข้อมูลให้อยู่ในรูปแบบที่ถูกต้อง")
+        st.code("df[col] = pd.to_numeric(df[col], errors='coerce')")
+        st.write("3. ลบข้อมูลที่ซ้ำซ้อน")
+        st.code("df.drop_duplicates(inplace=True)")
+        st.write("4. ลบค่า Outliers ด้วย IQR Method")
+        st.code("Q1, Q3 = df['Volume'].quantile([0.25, 0.75])")
+        st.code("IQR = Q3 - Q1")
+        st.code("lower_bound = Q1 - 1.5 * IQR")
+        st.code("upper_bound = Q3 + 1.5 * IQR")
+        st.code("df = df[(df['Volume'] >= lower_bound) & (df['Volume'] <= upper_bound)]")
+        st.write("5. แสดงผลลัพธ์ของข้อมูล")
+        
+        st.write("ลบแถวที่มีค่า Missing Values")
+        st.code("df_cleaned = df.dropna()")
+        
+    with tab2:
+        st.write("### 🌲 Neural Network Algorithm")
+        st.write("การพัฒนาระบบการทำนายสาเหตุและจำนวนผู้บาดเจ็บจากอุบัติเหตุทางถนน โดยใช้ Neural Network แบบ Multi-Output เป็นการใช้เทคนิค Machine Learning เพื่อทำการทำนาย 2 ประเภทของข้อมูลในเวลาเดียวกัน ได้แก่ สาเหตุของอุบัติเหตุ (Classification) และ จำนวนผู้บาดเจ็บ (Regression)")
+        
+        st.write("## ใช้ One-Hot Encoding สำหรับข้อมูลหมวดหมู่")
+        st.write("""
+        การ **One-Hot Encoding** เป็นการแปลงข้อมูลหมวดหมู่ให้เป็นตัวเลขโดยการสร้างคอลัมน์ใหม่สำหรับแต่ละประเภทของข้อมูล โดยคอลัมน์นั้นจะมีค่าเป็น `1` หากแถวข้อมูลนั้นมีหมวดหมู่นั้น และ `0` หากไม่มี
+        ตัวอย่างเช่น ในกรณีที่เรามีข้อมูลเกี่ยวกับสภาพอากาศ เช่น `Sunny`, `Rainy`, และ `Cloudy` ข้อมูลที่ได้จาก One-Hot Encoding จะมี 3 คอลัมน์ใหม่:
+        - `Weather_Condition_Sunny`
+        - `Weather_Condition_Rainy`
+        - `Weather_Condition_Cloudy`
+        
+        ข้อมูลที่ได้จะมีลักษณะดังนี้:
+
+        | Weather Condition | Weather_Condition_Sunny | Weather_Condition_Rainy | Weather_Condition_Cloudy |
+        |-------------------|-------------------------|-------------------------|--------------------------|
+        | Sunny             | 1                       | 0                       | 0                        |
+        | Rainy             | 0                       | 1                       | 0                        |
+        | Cloudy            | 0                       | 0                       | 1                        |
+        | Sunny             | 1                       | 0                       | 0                        |
+
+        การใช้ **One-Hot Encoding** เหมาะสำหรับข้อมูลที่ไม่มีลำดับที่ชัดเจน เช่น `สี`, `สภาพอากาศ` หรือข้อมูลที่เป็นประเภทต่าง ๆ ที่ไม่มีความสัมพันธ์ทางลำดับ
+        """)
+        
+        st.write("## ทฤษฎีของอัลกอริธึม (Algorithm Theory)")
+        st.write("ในการพัฒนาโมเดลนี้ใช้ Neural Network แบบ Multi-Output ซึ่งสามารถทำนายทั้งข้อมูลเชิงพาณิชย์ (Classification) และข้อมูลเชิงคณิตศาสตร์ (Regression) พร้อมกัน")
+        st.write("🔹 Classification: ทำนาย สาเหตุของอุบัติเหตุ โดยใช้การสุ่มตัวเลือกหลายประเภทที่เป็นหมวดหมู่ (Softmax Activation).")
+        st.write("🔹 Regression: ทำนาย จำนวนผู้บาดเจ็บ โดยใช้ค่าต่อเนื่อง (ReLU Activation).")
+        st.write("โมเดล Neural Network นี้จะมีชั้นซ่อนหลายชั้น (Hidden Layers) ซึ่งทำให้สามารถเรียนรู้ความสัมพันธ์ที่ซับซ้อนระหว่างข้อมูลอินพุต (Features) และผลลัพธ์ (Outputs)")
+
+        st.write("## การพัฒนาโมเดล (Model Development)")
+        st.write("""
+        ในการพัฒนาโมเดลนี้เราใช้ **Neural Network แบบ Multi-Output** เพื่อทำนายทั้งสาเหตุของอุบัติเหตุ (Classification) และจำนวนผู้บาดเจ็บ (Regression) พร้อมกันในโมเดลเดียวกัน
+        โมเดลนี้ประกอบด้วยขั้นตอนหลัก ๆ ดังนี้:
+        
+        1. **การเตรียมข้อมูล**:
+            - ใช้ **One-Hot Encoding** เพื่อแปลงข้อมูลหมวดหมู่ เช่น `Weather Condition` และ `Road Condition` ให้เป็นตัวเลข
+            - ใช้ **MinMaxScaler** เพื่อทำการปรับสเกลข้อมูลตัวเลข เช่น `Vehicles Involved`
+        
+        2. **การออกแบบโมเดล**:
+            - โมเดลประกอบด้วยชั้นซ่อนหลายชั้น (Hidden Layers) โดยเริ่มจากชั้น **Dense** ที่มีจำนวน 256 หน่วย ใช้ฟังก์ชัน **ReLU** เพื่อให้โมเดลสามารถเรียนรู้ความสัมพันธ์ที่ซับซ้อนระหว่างข้อมูล
+            - ใช้ **BatchNormalization** เพื่อปรับให้ค่าต่าง ๆ ของข้อมูลอยู่ในช่วงที่เหมาะสม
+            - ใช้ **Dropout** เพื่อป้องกันการเกิด Overfitting
+            - โมเดลมี **2 Output Layers**: 
+                - **Cause Output**: สำหรับทำนายสาเหตุของอุบัติเหตุ (ใช้ **Softmax Activation**)
+                - **Casualties Output**: สำหรับทำนายจำนวนผู้บาดเจ็บ (ใช้ **ReLU Activation**)
+        
+        3. **การฝึกสอนโมเดล**:
+            - ใช้ **Adam Optimizer** สำหรับการคำนวณค่า Gradient Descent
+            - เลือก **sparse_categorical_crossentropy** เป็น Loss Function สำหรับการทำนายสาเหตุ (Classification)
+            - เลือก **Mean Squared Error (MSE)** เป็น Loss Function สำหรับการทำนายจำนวนผู้บาดเจ็บ (Regression)
+            - ใช้ **Early Stopping** เพื่อหยุดการฝึกหากโมเดลไม่พัฒนาในช่วงหลาย ๆ epoch
+        
+        4. **การประเมินผล**:
+            - ใช้ **Accuracy** ในการประเมินผลของการทำนายสาเหตุของอุบัติเหตุ
+            - ใช้ **Mean Absolute Error (MAE)** ในการประเมินผลของการทำนายจำนวนผู้บาดเจ็บ
+        """)
+        st.write("## Code Implementation")
+        st.code("""
+                # ฝึกโมเดล
+                history = model.fit(X_train, {"cause_output": y_cause_train, "casualties_output": y_casualties_train},
+                    validation_data=(X_test, {"cause_output": y_cause_test, "casualties_output": y_casualties_test}),
+                    epochs=200, batch_size=64, callbacks=[early_stopping])
+                    """)
+        st.code(""" 
+                # ประเมินผลโมเดล
+                loss, cause_loss, casualties_loss, cause_acc, casualties_mae = model.evaluate(X_test, {"cause_output": y_cause_test, "casualties_output": y_casualties_test})
+                """)
+        st.write("## การทดสอบกับข้อมูลใหม่ (Model Prediction)")
+        st.code(""" 
+                # ทดสอบการพยากรณ์กับข้อมูลใหม่
+                sample_data = np.array(X_test.iloc[:5])
+                predicted_causes, predicted_casualties = model.predict(sample_data)
+                """)
 
 # ----------------------------- Page 4: Neural Network -----------------------------
-elif page == "🤖 Neural Network":
+elif page == "🤖 Demo Neural Network":
     st.title("🤖 Accident Prediction")
     
     # แสดงข้อมูลดิบก่อนการ encode
     if st.checkbox("🔍 Show Raw Data"):
         st.subheader("📊 Raw Data")
         st.write(raw_data.head())  # แสดงข้อมูลดิบที่ยังไม่ได้ทำการ encode
+    st.write(f"🔹 **MAE: {history.history['casualties_output_mae'][-1]}**")
+    st.write(f"🔹 **Cause Prediction Accuracy: {history.history['cause_output_accuracy'][-1]}**")
     
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Training History", "📈 Cause Prediction Accuracy", "🔥 Feature Correlation", "🧠 Sample Predictions"])
-    
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Training History", "📈 Cause Prediction Accuracy", "🔥 Cause Accident", "🧠 Sample Predictions"])
     with tab1:
         st.subheader("📊 Training History")
         fig = go.Figure()
@@ -306,7 +425,7 @@ elif page == "🤖 Neural Network":
         fig.add_trace(go.Scatter(y=history.history['val_loss'], mode='lines+markers', name='Validation Loss'))
         fig.update_layout(xaxis_title='Epochs', yaxis_title='Loss', template='plotly_dark')
         st.plotly_chart(fig)
-    
+
     with tab2:
         st.subheader("📈 Cause Prediction Accuracy")
         fig = go.Figure()
@@ -316,10 +435,18 @@ elif page == "🤖 Neural Network":
         st.plotly_chart(fig)
     
     with tab3:
-        st.subheader("🔥 Feature Correlation Heatmap")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(processed_df.corr(), annot=True, fmt='.2f', cmap='coolwarm', linewidths=0.5, ax=ax)
-        st.pyplot(fig)
+        st.subheader("📊 Cause Comparison: 2023 vs 2024")
+        causes = ["Reckless Driving", "Drunk Driving", "Weather Conditions", "Speeding", "Mechanical Failure", "Distracted Driving"]
+        data_2023 = [100, 150, 80, 200, 50, 120]  # Example data for 2023
+        data_2024 = [120, 160, 90, 220, 55, 130]  # Example data for 2024
+        df_comparison = pd.DataFrame({
+            "Cause": causes,
+            "2023": data_2023,
+            "2024": data_2024
+        })
+        fig = px.bar(df_comparison, x="Cause", y=["2023", "2024"], barmode="group", title="Cause Comparison: 2023 vs 2024")
+        fig.update_layout(xaxis_title="Cause", yaxis_title="Total Count", template="plotly_dark")
+        st.plotly_chart(fig)
     
     with tab4:
         st.subheader("🧠 Sample Predictions")
