@@ -15,6 +15,12 @@ sys.path.append('D:\Work\Code\data-analysis\MLSVM.py')
 sys.path.append('D:\Work\Code\data-analysis\MLRF.py')
 sys.path.append('D:\Work\Code\data-analysis\ISNeuralNetwork')
 
+
+st.set_page_config(
+    page_title="Intelligent System Project",
+    page_icon="📊" ,
+)
+
 # Load data
 @st.cache_data
 def load_data(file_path):
