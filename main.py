@@ -420,6 +420,7 @@ elif page == "⚛️ Summarize NL":
         st.link_button("🔗 ReLU Activation", "https://www.geeksforgeeks.org/relu-activation-function-in-deep-learning/")
         st.link_button("🔗 Adam Optimizer", "https://www.geeksforgeeks.org/adam-optimizer/")
         st.link_button("🔗 Sheet in classroom", "https://classroom.google.com/u/1/w/NzMyNDg3MzcyNzEy/t/all")
+        st.link_button("🔗 Data set", "https://www.kaggle.com/datasets/adilshamim8/global-traffic-accidents-dataset")
 # ----------------------------- Page 4: Neural Network -----------------------------
 elif page == "🤖 Demo Neural Network":
     st.title("🤖 Accident Prediction")
