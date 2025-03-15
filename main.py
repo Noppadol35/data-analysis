@@ -6,14 +6,14 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from NL import raw_data, model, X_test, cause_encoder, history, processed_df
+from ISNeuralNetwork import raw_data, model, X_test, cause_encoder, history, processed_df
 from MLRF import train_rf_model
 from MLSVM import train_svm_model
 
 import sys
 sys.path.append('D:\Work\Code\data-analysis\MLSVM.py')
 sys.path.append('D:\Work\Code\data-analysis\MLRF.py')
-sys.path.append('D:\Work\Code\data-analysis\NL.py')
+sys.path.append('D:\Work\Code\data-analysis\ISNeuralNetwork.py')
 
 # Load data
 @st.cache_data
